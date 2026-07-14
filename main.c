@@ -1,119 +1,84 @@
 #include "raylib.h"
 #include "player.h"
-#include "world.h"
+#include "coin.h"
+#include "timer.h"
 
-#define TIME_LIMIT 40.0f   // seconds to reach Academic Building-2
-#define SCREEN_W 1000
-#define SCREEN_H 700
 
-typedef enum GameState {
-    STATE_MENU,
-    STATE_PLAYING,
-    STATE_WIN,
-    STATE_LOSE
-} GameState;
+int main()
+{
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 
-static Camera2D MakeCamera(Player *player) {
-    Camera2D camera = { 0 };
-    camera.target = (Vector2){ player->position.x + player->width / 2.0f,
-                                player->position.y + player->height / 2.0f };
-    camera.offset = (Vector2){ SCREEN_W / 2.0f, SCREEN_H / 2.0f };
-    camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
-    return camera;
-}
+    InitWindow(800,450,"CampusRush");
 
-int main(void) {
-    InitWindow(SCREEN_W, SCREEN_H, "IUT Campus Rush - Reach Academic Building 2!");
-    SetTargetFPS(60);
-
-    World world;
-    World_Load(&world);
+    Texture2D grass = LoadTexture("assets/grass_raylib_compatible.png");
 
     Player player;
-    Player_Load(&player, world.startPosition);
+    Player_Load(&player,(Vector2){400,300});
+    
 
-    GameState state = STATE_MENU;
-    float timeRemaining = TIME_LIMIT;
+    Camera2D camera = {0};
+    camera.target = player.position;
+    camera.offset = (Vector2){400,225};
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f;
 
-    while (!WindowShouldClose()) {
+    Coin coins[10];
+    int score =0;
+    float timeLeft = 60.0f; // 60 seconds timer
+    for(int i=0;i<10;i++)
+    {
+        coins[i]= CreateCoin(3000,3000);
+    }
+
+    SetTargetFPS(60);
+
+
+    while(!WindowShouldClose())
+    {
         float dt = GetFrameTime();
 
-        // ---- UPDATE ----
-        switch (state) {
-            case STATE_MENU: {
-                if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
-                    state = STATE_PLAYING;
-                    timeRemaining = TIME_LIMIT;
-                    player.position = world.startPosition;
-                }
-            } break;
+        Player_Update(&player, dt);
+        UpdateTimer(&timeLeft);
+        Rectangle playerRect=Player_GetCollisionRect(&player);
+           
 
-            case STATE_PLAYING: {
-                Player_Update(&player, &world, dt);
+        camera.target = player.position;
 
-                timeRemaining -= dt;
-                if (timeRemaining <= 0.0f) {
-                    timeRemaining = 0.0f;
-                    state = STATE_LOSE;
-                }
-
-                if (World_CheckGoal(&world, Player_GetCollisionRect(&player))) {
-                    state = STATE_WIN;
-                }
-            } break;
-
-            case STATE_WIN:
-            case STATE_LOSE: {
-                if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
-                    state = STATE_PLAYING;
-                    timeRemaining = TIME_LIMIT;
-                    player.position = world.startPosition;
-                }
-            } break;
-        }
-
-        // ---- DRAW ----
-        BeginDrawing();
-        ClearBackground(BLACK);
-
-        if (state == STATE_MENU) {
-            DrawText("IUT CAMPUS RUSH", SCREEN_W/2 - MeasureText("IUT CAMPUS RUSH", 40)/2, 220, 40, RED);
-            DrawText("Get from the Gym to Academic Building-2 before time runs out!",
-                     SCREEN_W/2 - MeasureText("Get from the Gym to Academic Building-2 before time runs out!", 20)/2,
-                     300, 20, RAYWHITE);
-            DrawText("Move: WASD / Arrow Keys", SCREEN_W/2 - MeasureText("Move: WASD / Arrow Keys", 20)/2, 340, 20, GRAY);
-            DrawText("Press ENTER to start", SCREEN_W/2 - MeasureText("Press ENTER to start", 22)/2, 400, 22, YELLOW);
-        } else {
-            Camera2D camera = MakeCamera(&player);
-            BeginMode2D(camera);
-                World_Draw(&world);
-                World_DrawGoalMarker(&world);
-                Player_Draw(&player);
-            EndMode2D();
-
-            // HUD
-            DrawRectangle(0, 0, SCREEN_W, 50, Fade(BLACK, 0.5f));
-            DrawText(TextFormat("Time: %.1f s", timeRemaining), 20, 12, 26,
-                      (timeRemaining < 10.0f) ? RED : RAYWHITE);
-            DrawText("Reach Academic Building-2!", SCREEN_W - 320, 12, 22, RAYWHITE);
-
-            if (state == STATE_WIN) {
-                DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(BLACK, 0.6f));
-                DrawText("YOU WIN!", SCREEN_W/2 - MeasureText("YOU WIN!", 50)/2, 280, 50, GREEN);
-                DrawText("Press ENTER to play again", SCREEN_W/2 - MeasureText("Press ENTER to play again", 20)/2, 350, 20, RAYWHITE);
-            } else if (state == STATE_LOSE) {
-                DrawRectangle(0, 0, SCREEN_W, SCREEN_H, Fade(BLACK, 0.6f));
-                DrawText("TIME'S UP - YOU LOSE", SCREEN_W/2 - MeasureText("TIME'S UP - YOU LOSE", 50)/2, 280, 50, RED);
-                DrawText("Press ENTER to try again", SCREEN_W/2 - MeasureText("Press ENTER to try again", 20)/2, 350, 20, RAYWHITE);
+        for(int i=0;i<10;i++)
+        {
+            if(CheckCoinCollision(&coins[i],playerRect))
+            {
+                score++;
             }
         }
+        BeginDrawing();
+            ClearBackground(RAYWHITE);
 
+            BeginMode2D(camera);
+
+               for(int y=0; y<GetScreenHeight(); y+=grass.height){
+                    for(int x=0; x<GetScreenWidth(); x+=grass.width){
+                        DrawTexture(grass, x, y, WHITE);
+                    }
+               }
+                for(int i=0;i<10;i++){
+                    DrawCoin(coins[i]);
+                }
+
+                Player_Draw(&player);
+
+            EndMode2D();
+
+            DrawText(TextFormat("Score: %i",score),10,10,30,BLACK); 
+                
+        
+        DrawTimer(timeLeft);
         EndDrawing();
     }
 
     Player_Unload(&player);
-    World_Unload(&world);
+    UnloadTexture(grass);
+
     CloseWindow();
 
     return 0;
