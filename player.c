@@ -2,6 +2,8 @@
 #include <math.h>
 
 #define FRAME_TIME 0.14f
+#define MAP_WIDTH 2150
+#define MAP_HEIGHT 1450
 
 void Player_Load(Player *player, Vector2 startPos)
 {
@@ -22,7 +24,7 @@ void Player_Load(Player *player, Vector2 startPos)
     player->isMoving = false;
 
     player->position = startPos;
-    player->speed = 190.0f;
+    player->speed = 190.f;
 
     player->height = 100;
     player->width = (int)(player->height *
@@ -96,18 +98,18 @@ void Player_Update(Player *player, float dt)
     player->position.x += move.x * player->speed * dt;
     player->position.y += move.y * player->speed * dt;
 
-    // Keep inside 3000x3000 map
+    // Keep inside map
     if (player->position.x < 0)
         player->position.x = 0;
 
     if (player->position.y < 0)
         player->position.y = 0;
 
-    if (player->position.x + player->width > 3000)
-        player->position.x = 3000 - player->width;
+    if (player->position.x + player->width > MAP_WIDTH)
+        player->position.x = MAP_WIDTH - player->width;
 
-    if (player->position.y + player->height > 3000)
-        player->position.y = 3000 - player->height;
+    if (player->position.y + player->height > MAP_HEIGHT)
+        player->position.y = MAP_HEIGHT - player->height;
 }
 
 void Player_Draw(Player *player)

@@ -2,9 +2,6 @@
 #include "player.h"
 #include "coin.h"
 #include "timer.h"
-#include "hurdle.h"
-#define MAP_WIDTH 2150
-#define MAP_HEIGHT 1450
 #include <stdio.h>
 
 
@@ -28,18 +25,13 @@ int main()
     camera.zoom = 1.0f;
 
     Coin coins[10];
-    Hurdle hurdles[5];
     int score =0;
 
     float timeLeft = 60.0f;
      
     for(int i=0;i<10;i++)
     {
-        coins[i]= CreateCoin(MAP_WIDTH, MAP_HEIGHT);
-    }
-
-    for(int i=0;i<5;i++){
-        hurdles[i]= CreateHurdle(MAP_WIDTH, MAP_HEIGHT);
+        coins[i]= CreateCoin(1200,1200);
     }
 
     SetTargetFPS(60);
@@ -77,10 +69,6 @@ int main()
                }
                 for(int i=0;i<10;i++){
                     DrawCoin(coins[i]);
-                }
-
-                for(int i=0;i<5;i++){
-                    DrawHurdle(hurdles[i]);
                 }
 
                 Player_Draw(&player);
