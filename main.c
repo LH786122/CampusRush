@@ -43,7 +43,7 @@ int main(void)
     char popupMessage[128] = "";
     float popupTimer = 0.0f;
     bool lowEnergyTriggered = false;
-    Texture2D grass = LoadTexture("assets/FINALMAPPP.png");
+    Texture2D grass = LoadTexture("assets/FINALMAP.png");
     Texture2D manualBg = LoadTexture("forcover (1).png"); 
     Texture2D winBg = LoadTexture("forcover (1).png"); 
     Texture2D loseBg = LoadTexture("forcover (1).png");
@@ -92,7 +92,7 @@ int main(void)
         {
             float dt = GetFrameTime();
 
-            Player_Update(&player, dt);
+Player_Update(&player, dt, MAP_WIDTH, MAP_HEIGHT);
             UpdateTimer(&timeLeft);
 
             // Update popup timer duration
