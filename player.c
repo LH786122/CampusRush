@@ -11,7 +11,7 @@ void Player_Load(Player *player, Vector2 startPos)
     player->framesPerRow = 8;
 
     player->frameWidth = player->spriteSheet.width / 8;
-    player->frameHeight = player->spriteSheet.height / 3;
+    player->frameHeight = player->spriteSheet.height / 4;
 
     if (player->frameWidth <= 0)
         player->frameWidth = 64;
@@ -161,39 +161,33 @@ void Player_Update(Player *player, float dt, int mapWidth, int mapHeight)
 void Player_Draw(Player *player)
 {
     int row;
-    int frame;
 
     switch (player->direction)
     {
         case DIR_DOWN:
             row = 0;
-            frame = 0;
             break;
 
         case DIR_UP:
             row = 1;
-            frame = 0;
             break;
 
         case DIR_LEFT:
             row = 2;
-            frame = 2;
             break;
 
         case DIR_RIGHT:
-            row = 2;
-            frame = 5;
+            row = 3;
             break;
 
         default:
             row = 0;
-            frame = 0;
             break;
     }
 
 
     Rectangle src = {
-        frame * player->frameWidth,
+        player->currentFrame * player->frameWidth,
         row * player->frameHeight,
         player->frameWidth,
         player->frameHeight
