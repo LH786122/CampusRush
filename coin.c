@@ -1,17 +1,22 @@
 #include "coin.h"
+#include "blocked.h"
 
 
 Coin CreateCoin(int mapWidth, int mapHeight){
     Coin coin;
-    coin.position= (Vector2){
-        GetRandomValue(50, mapWidth - 50),
-        GetRandomValue(50, mapHeight -50)
-    };
-    coin.radius =20;
-    coin.collected = false;
+    Vector2 pos;
 
+    do{
+        pos.x=(float)GetRandomValue(50,mapWidth-50);
+        pos.y=(float)GetRandomValue(50,mapHeight-50);
+    }while(isBlocked(pos));
+    
+    coin.position = pos;
+    coin.radius = 10;
+    coin.collected = false;
     return coin;
-    }
+}
+    
 
 void DrawCoin(Coin coin){
     if(!coin.collected){

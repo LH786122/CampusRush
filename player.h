@@ -31,8 +31,8 @@ typedef struct Player {
 
 void Player_Load(Player *player, Vector2 startPos);
 void Player_Unload(Player *player);
-void Player_Update(Player *player, float dt);
-void Player_Draw(Player *player);
 Rectangle Player_GetCollisionRect(Player *player);
+void Player_Update(Player *player, float dt, int mapWidth, int mapHeight);
+void Player_Draw(Player *player);
 
 #endif

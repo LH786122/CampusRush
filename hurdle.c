@@ -1,12 +1,16 @@
 #include "hurdle.h"
+#include "blocked.h"
 
 
-Hurdle CreateHurdle(int mapwidth, int mapheight){
-    Hurdle hurdle;
-    hurdle.position= (Vector2){
-        GetRandomValue(50, mapwidth -50),
-        GetRandomValue(50, mapheight - 50)
-    };
+Hurdle CreateHurdle(int mapWidth, int mapHeight){
+     Hurdle hurdle;
+     Vector2 pos;
+     do{
+        pos.x=(float)GetRandomValue(50,mapWidth-50);
+        pos.y=(float)GetRandomValue(50,mapHeight-50);
+    }while(isBlocked(pos));
+
+    
     hurdle.width = 20;
     hurdle.height = 20;
 
