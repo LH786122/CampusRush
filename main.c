@@ -39,10 +39,12 @@ int main(void)
     int score = 0;
     float timeLeft = 60.0f;
 
-    // --- POPUP SYSTEM VARIABLES ---
+    // --- POPUP & INTERACTIVE SYSTEM VARIABLES ---
     char popupMessage[128] = "";
     float popupTimer = 0.0f;
-    bool lowEnergyTriggered = false;
+    bool lowEnergyTriggered = false; // Ensures time prompt triggers only once per round
+    int popupState = 0;             // 0: Standard/Coin, 1: Question [Y/N], 2: Rocket Direction
+
     Texture2D grass = LoadTexture("assets/FINALMAP.png");
     Texture2D manualBg = LoadTexture("forcover (1).png"); 
     Texture2D winBg = LoadTexture("forcover (1).png"); 
@@ -95,23 +97,54 @@ int main(void)
 Player_Update(&player, dt, MAP_WIDTH, MAP_HEIGHT);
             UpdateTimer(&timeLeft);
 
-            // Update popup timer duration
+            // Update active popup display duration
             if (popupTimer > 0.0f)
             {
                 popupTimer -= dt;
             }
-            float popupTriggerTime = 30.0f; // Set your target time here (e.g., 15 seconds remaining)
+            else
+            {
+                popupState = 0; // Clear state when message timer expires
+            }
+
+            // --- ONE-TIME LOW ENERGY TRIGGER ---
+            float popupTriggerTime = 30.0f; // Target threshold (30s remaining)
+            if (timeLeft <= popupTriggerTime && !lowEnergyTriggered)
+            {
+                lowEnergyTriggered = true; // Prevents re-triggering during the round
+                popupState = 1;            // Set state to Y/N question
+                snprintf(popupMessage, sizeof(popupMessage), "Do you want an energy booster? [Y/N]");
+                popupTimer = 5.0f;         // 5-second window to answer
+            }
+
+            // --- INTERACTIVE KEY PRESS HANDLING ---
+            if (popupState == 1 && popupTimer > 0.0f)
+            {
+                if (IsKeyPressed(KEY_Y))
+                {
+                    popupState = 2; // Move to direction state
+                    snprintf(popupMessage, sizeof(popupMessage), "If YES, go to ROCKET!");
+                    popupTimer = 4.0f;
+                }
+                else if (IsKeyPressed(KEY_N))
+                {
+                    popupTimer = 0.0f; // Dismiss prompt immediately
+                    popupState = 0;
+                }
+            }
+
             Rectangle playerRect = Player_GetCollisionRect(&player);
             camera.target = player.position;
 
-            // Check coin collision & trigger popup
+            // Check coin collision
             for (int i = 0; i < 10; i++)
             {
                 if (CheckCoinCollision(&coins[i], playerRect))
                 {
                     score++;
-                    snprintf(popupMessage, sizeof(popupMessage), "Would you like to have a ENERGY BOOSTER?\nIf YES,Go to ROCKET!");
-                    popupTimer = 4.0f; // Show for 2 seconds
+                    popupState = 0;
+                    snprintf(popupMessage, sizeof(popupMessage), "+1 Coin Picked Up!");
+                    popupTimer = 2.0f;
                 }
             }
 
@@ -132,6 +165,8 @@ Player_Update(&player, dt, MAP_WIDTH, MAP_HEIGHT);
                 score = 0;
                 timeLeft = 60.0f;
                 popupTimer = 0.0f;
+                popupState = 0;
+                lowEnergyTriggered = false; // Reset trigger state for new game
                 player.position = (Vector2){ 1750.0f, 1300.0f };
                 for (int i = 0; i < 10; i++) coins[i] = CreateCoin(MAP_WIDTH, MAP_HEIGHT);
                 currentScreen = SCREEN_GAMEPLAY;
@@ -141,6 +176,8 @@ Player_Update(&player, dt, MAP_WIDTH, MAP_HEIGHT);
                 score = 0;
                 timeLeft = 60.0f;
                 popupTimer = 0.0f;
+                popupState = 0;
+                lowEnergyTriggered = false; // Reset trigger state for menu
                 player.position = (Vector2){ 1750.0f, 1300.0f };
                 for (int i = 0; i < 10; i++) coins[i] = CreateCoin(MAP_WIDTH, MAP_HEIGHT);
                 currentScreen = SCREEN_TITLE;
@@ -180,13 +217,14 @@ Player_Update(&player, dt, MAP_WIDTH, MAP_HEIGHT);
 
                 DrawTextBright("CAMPUS RUSH - MANUAL", currentW/2 - MeasureText("CAMPUS RUSH - MANUAL", 25)/2, 50, 25, YELLOW);
                 DrawTextBright("1. Collect coins to earn points.", 100, 160, 20, WHITE);
-                DrawTextBright("2. Avoid hurdles to prevent slowdowns.", 100, 200, 20, WHITE);
+                DrawTextBright("2. Navigate around campus obstacles.", 100, 200, 20, WHITE);
                 DrawTextBright("3. Get energy booster drinks to run faster.", 100, 240, 20, WHITE);
                 DrawTextBright("4. Reach Academic Building-2 before the timer runs out!", 100, 280, 20, WHITE);
                 DrawTextBright("Press [BACKSPACE] to return to Menu", 100, 340, 20, YELLOW);
             }
             else if (currentScreen == SCREEN_GAMEPLAY)
             {
+                // World Rendering (Scrolls within Map Boundaries)
                 BeginMode2D(camera);
 
                     if (grass.id > 0) {
@@ -214,19 +252,25 @@ Player_Update(&player, dt, MAP_WIDTH, MAP_HEIGHT);
 
                     Player_Draw(&player);
 
-                    // --- DRAW FLOATING POPUP TEXT OVER PLAYER ---
+                    // --- IN-WORLD POPUP CARD (LIGHT THEME, READABLE TEXT) ---
                     if (popupTimer > 0.0f)
                     {
                         int textW = MeasureText(popupMessage, 18);
+                        
+                        // Centered horizontally above player
                         float textX = player.position.x + (player.width / 2.0f) - (textW / 2.0f);
-                        float textY = player.position.y - 30.0f;
+                        
+                        // Shifted 70 pixels up so character remains visible
+                        float textY = player.position.y - 70.0f; 
 
-                        DrawRectangle((int)textX - 6, (int)textY - 4, textW + 12, 24, (Color){ 0, 0, 0, 200 });
-                        DrawText(popupMessage, (int)textX, (int)textY, 18, YELLOW);
+                        DrawRectangle((int)textX - 10, (int)textY - 6, textW + 20, 32, (Color){ 240, 240, 240, 240 });
+                        DrawRectangleLines((int)textX - 10, (int)textY - 6, textW + 20, 32, BLACK);
+                        DrawText(popupMessage, (int)textX, (int)textY, 18, BLACK);
                     }
 
                 EndMode2D();
 
+                // Fixed Screen HUD Overlay
                 DrawTextBright(TextFormat("Score: %i", score), 15, 15, 30, YELLOW); 
                 DrawTimer(timeLeft);
             }
@@ -246,7 +290,7 @@ Player_Update(&player, dt, MAP_WIDTH, MAP_HEIGHT);
                 DrawRectangle(0, 0, currentW, currentH, (Color){ 0, 0, 0, 180 });
 
                 const char *winTitle = "SAVED FOR TODAY!";
-                const char *winPrompt = "Press [ENTER] to Play Again | [ESC] for Menu";
+                const char *winPrompt = "Press [ENTER] to Play Again | [BACKSPACE] for Menu";
 
                 DrawTextBright(winTitle, currentW/2 - MeasureText(winTitle, 30)/2, currentH/2 - 80, 30, YELLOW);
                 DrawTextBright(winPrompt, currentW/2 - MeasureText(winPrompt, 18)/2, currentH/2 + 70, 18, LIGHTGRAY);
@@ -267,7 +311,7 @@ Player_Update(&player, dt, MAP_WIDTH, MAP_HEIGHT);
                 DrawRectangle(0, 0, currentW, currentH, (Color){ 0, 0, 0, 190 });
 
                 const char *loseTitle = "IN IUT, ATTENDANCE MATTERS!";
-                const char *losePrompt = "Press [ENTER] to Try Again | [ESC] for Menu";
+                const char *losePrompt = "Press [ENTER] to Try Again | [BACKSPACE] for Menu";
 
                 DrawTextBright(loseTitle, currentW/2 - MeasureText(loseTitle, 30)/2, currentH/2 - 80, 30, YELLOW);
                 DrawTextBright(losePrompt, currentW/2 - MeasureText(losePrompt, 18)/2, currentH/2 + 70, 18, LIGHTGRAY);
