@@ -136,28 +136,6 @@ int main(void)
             Rectangle playerRect = Player_GetCollisionRect(&player);
             camera.target = player.position;
 
-            // --- NEW FEATURE: HURDLE COLLISION (RESET POSITION & COINS, KEEP TIME) ---
-            for (int i = 0; i < 5; i++)
-            {
-                if (CheckHurdleCollision(&hurdles[i], playerRect))
-                {
-                    // Reset player to starting position
-                    player.position = (Vector2){ 1750.0f, 1300.0f };
-                    
-                    // Reset score and re-populate coins
-                    score = 0;
-                    for (int c = 0; c < 10; c++) {
-                        coins[c] = CreateCoin(MAP_WIDTH, MAP_HEIGHT);
-                    }
-
-                    // Display penalty message
-                    popupState = 0;
-                    snprintf(popupMessage, sizeof(popupMessage), "Hit a Hurdle! Restarting rush & coins!");
-                    popupTimer = 2.5f;
-                    break;
-                }
-            }
-
             // Check coin collision
             for (int i = 0; i < 10; i++)
             {
@@ -239,7 +217,7 @@ int main(void)
 
                 DrawTextBright("CAMPUS RUSH - MANUAL", currentW/2 - MeasureText("CAMPUS RUSH - MANUAL", 25)/2, 50, 25, YELLOW);
                 DrawTextBright("1. Collect coins to earn points.", 100, 160, 20, WHITE);
-                DrawTextBright("2. Avoid hurdles - hitting one resets position and coins!", 100, 200, 20, WHITE);
+                DrawTextBright("2. Navigate around campus obstacles.", 100, 200, 20, WHITE);
                 DrawTextBright("3. Get energy booster drinks to run faster.", 100, 240, 20, WHITE);
                 DrawTextBright("4. Reach Academic Building-2 before the timer runs out!", 100, 280, 20, WHITE);
                 DrawTextBright("Press [BACKSPACE] to return to Menu", 100, 340, 20, YELLOW);
