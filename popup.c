@@ -1,4 +1,5 @@
 #include "popup.h"
+#include "energy.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -19,37 +20,46 @@ void TriggerPopup(PopupSystem *popup, const char *msg, float duration) {
     popup->timer = duration;
 }
 
-void UpdatePopupSystem(PopupSystem *popup, float dt, float timeLeft) {
+void UpdatePopupSystem(PopupSystem *popup, float dt, const EnergySystem *energy) {
+    // 1. Timer Countdown
     if (popup->timer > 0.0f) {
         popup->timer -= dt;
     } else {
+        // Clear message string when timer expires to prevent leftover rendering
+        popup->message[0] = '\0';
         popup->state = 0;
     }
 
-    // Low Energy Prompt Check
-    float popupTriggerTime = 30.0f;
-    if (timeLeft <= popupTriggerTime && !popup->lowEnergyTriggered) {
+    float energyRatio = energy->current / energy->max;
+
+    // 2. Trigger low energy prompt ONLY when no other popup is actively playing
+    if (energyRatio <= 0.10f && !popup->lowEnergyTriggered && popup->timer <= 0.0f) {
         popup->lowEnergyTriggered = true;
         popup->state = 1;
-        snprintf(popup->message, sizeof(popup->message), "Do you want an energy booster? [Y/N]");
-        popup->timer = 5.0f;
+        TriggerPopup(popup, "Energy low! Buy a drink? [Y/N]", 5.0f);
     }
 
-    // Input Handling for Question
+    // Reset lock when energy is restored above 10%
+    if (energyRatio > 0.10f) {
+        popup->lowEnergyTriggered = false;
+    }
+
+    // 3. Handle Key Inputs during low energy prompt
     if (popup->state == 1 && popup->timer > 0.0f) {
         if (IsKeyPressed(KEY_Y)) {
             popup->state = 2;
-            snprintf(popup->message, sizeof(popup->message), "If YES, go to ROCKET!");
-            popup->timer = 4.0f;
+            TriggerPopup(popup, "Go to ROCKET to buy a drink!", 4.0f);
         } else if (IsKeyPressed(KEY_N)) {
             popup->timer = 0.0f;
+            popup->message[0] = '\0';
             popup->state = 0;
         }
     }
 }
 
 void DrawPopupInWorld(const PopupSystem *popup, Vector2 playerPos, float playerWidth) {
-    if (popup->timer > 0.0f) {
+    // Only draw if there is a valid message and positive timer
+    if (popup->timer > 0.0f && popup->message[0] != '\0') {
         int textW = MeasureText(popup->message, 18);
         float textX = playerPos.x + (playerWidth / 2.0f) - (textW / 2.0f);
         float textY = playerPos.y - 70.0f;

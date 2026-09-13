@@ -60,15 +60,12 @@ int main(void)
     int score = 0;
     GameScreen currentScreen = SCREEN_TITLE;
     float timeLeft = 60.0f;
-
-    bool lowEnergyAsked = false;
-    int energyPromptState = 0; // 0: idle, 1: Y/N asked, 2: told to go to Rocket
     
     CreateCoins(coins);
     CreateHurdles(hurdles);
 
     // Goal location over Academic Building 2
-    Rectangle academicBuilding2 = { 300, 143, 240,140 };
+    Rectangle academicBuilding2 = { 300, 143, 240, 140 };
 
     SetTargetFPS(60);
 
@@ -92,41 +89,14 @@ int main(void)
 
             Player_Update(&player, dt, MAP_WIDTH, MAP_HEIGHT);
             UpdateTimer(&timeLeft);
-            UpdatePopupSystem(&popup, dt, timeLeft); // Updated popup system
+            
+            // Centralized Popup System handles low energy prompts
+            UpdatePopupSystem(&popup, dt, &energy); 
 
             Rectangle playerRect = Player_GetCollisionRect(&player);
             camera.target = player.position;
 
             Energy_Update(&energy, dt, player.isMoving);
-
-            // --- LOW ENERGY (<=10%) INTERACTIVE PROMPT ---
-            float energyRatio = energy.current / energy.max;
-
-            if (energyRatio <= 0.10f && !lowEnergyAsked && popup.timer <= 0.0f)
-            {
-                lowEnergyAsked = true;
-                energyPromptState = 1;
-                TriggerPopup(&popup, "Energy low! Buy a drink? [Y/N]", 5.0f);
-            }
-
-            if (energyRatio > 0.10f)
-            {
-                lowEnergyAsked = false; // allow it to ask again next time energy drops low
-            }
-
-            if (energyPromptState == 1 && popup.timer > 0.0f)
-            {
-                if (IsKeyPressed(KEY_Y))
-                {
-                    energyPromptState = 2;
-                    TriggerPopup(&popup, "Go to ROCKET to buy a drink!", 4.0f);
-                }
-                else if (IsKeyPressed(KEY_N))
-                {
-                    popup.timer = 0.0f;
-                    energyPromptState = 0;
-                }
-            }
 
             // --- HURDLE COLLISION -> ENERGY LOSS ---
             for (int i = 0; i < HURDLE_COUNT; i++)
@@ -142,7 +112,7 @@ int main(void)
 
             // --- VENDING MACHINE ---
             Vending_Update(&vending, playerRect, &score, &energy,
-                            popup.message, sizeof(popup.message), &popup.timer);
+                           popup.message, sizeof(popup.message), &popup.timer);
 
             for (int i = 0; i < COIN_COUNT; i++)
             {
@@ -163,8 +133,6 @@ int main(void)
                 timeLeft = 60.0f;
                 ResetPopupSystem(&popup);
                 Energy_Init(&energy);
-                lowEnergyAsked = false;
-                energyPromptState = 0;
                 player.position = (Vector2){ 834.0f, 955.0f };
                 CreateCoins(coins);
                 currentScreen = SCREEN_GAMEPLAY;
@@ -175,8 +143,6 @@ int main(void)
                 timeLeft = 60.0f;
                 ResetPopupSystem(&popup);
                 Energy_Init(&energy);
-                lowEnergyAsked = false;
-                energyPromptState = 0;
                 player.position = (Vector2){ 834.0f, 955.0f };
                 CreateCoins(coins);
                 currentScreen = SCREEN_TITLE;
@@ -219,7 +185,7 @@ int main(void)
                     }
 
                     Player_Draw(&player);
-                    DrawPopupInWorld(&popup, player.position, player.width); // Rendered popup
+                    DrawPopupInWorld(&popup, player.position, player.width);
 
                     Rectangle playerRectDraw = Player_GetCollisionRect(&player);
                     Vending_DrawPrompt(&vending, playerRectDraw, player.position, player.width);
@@ -231,14 +197,6 @@ int main(void)
                 DrawTimer(timeLeft);
 
                 Energy_Draw(&energy, currentW);
-
-                // Global low-energy reminder (shows regardless of location)
-                if (energy.current / energy.max < 0.10f)
-                {
-                    const char *warn = "Energy critical! PRESS [E] NEAR ROCKET TO BUY DRINKS!";
-                    int warnW = MeasureText(warn, 20);
-                    DrawText(warn, currentW/2 - warnW/2, 90, 20, RED);
-                }
             }
             else if (currentScreen == SCREEN_VICTORY)
             {
