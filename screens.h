@@ -2,6 +2,7 @@
 #define SCREENS_H
 
 #include "raylib.h"
+#include "energy.h"
 
 typedef enum GameScreen { 
     SCREEN_TITLE, 
@@ -15,6 +16,6 @@ void DrawTextBright(const char *text, int posX, int posY, int fontSize, Color co
 void DrawManualScreen(Texture2D background, int screenWidth, int screenHeight);
 void DrawVictoryScreen(Texture2D background, int screenWidth, int screenHeight);
 void DrawGameOverScreen(Texture2D background, int screenWidth, int screenHeight);
-void CheckGameConditions(Rectangle playerRect, Rectangle goalRect, float timeLeft, GameScreen *currentScreen);
+void CheckGameConditions(Rectangle playerRect, Rectangle goalRect, float timeLeft, EnergySystem *energy, GameScreen *currentScreen);
 
 #endif

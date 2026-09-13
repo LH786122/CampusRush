@@ -1,4 +1,5 @@
 #include "screens.h"
+#include "energy.h"
 
 void DrawTextBright(const char *text, int posX, int posY, int fontSize, Color color) {
     DrawText(text, posX + 2, posY + 2, fontSize, BLACK);
@@ -20,11 +21,11 @@ void DrawManualScreen(Texture2D background, int screenWidth, int screenHeight) {
     DrawRectangle(0, 0, screenWidth, screenHeight, (Color){ 0, 0, 0, 200 });
 
     DrawTextBright("CAMPUS RUSH - MANUAL", screenWidth/2 - MeasureText("CAMPUS RUSH - MANUAL", 25)/2, 50, 25, YELLOW);
-    DrawTextBright("1. Collect coins to earn points.", 100, 160, 20, WHITE);
-    DrawTextBright("2. Navigate around campus obstacles.", 100, 200, 20, WHITE);
-    DrawTextBright("3. Get energy booster drinks to run faster.", 100, 240, 20, WHITE);
-    DrawTextBright("4. Reach Academic Building-2 before the timer runs out!", 100, 280, 20, WHITE);
-    DrawTextBright("Press [BACKSPACE] to return to Menu", 100, 340, 20, YELLOW);
+    DrawTextBright("1. Reach Academic Building-2 before your energy & timer runs out!", 100, 160, 20, WHITE);
+    DrawTextBright("2. Each Step and Hurdles cause energy loss.", 100, 200, 20, WHITE);
+    DrawTextBright("3. Collect more & more coins to buy energy booster drinks.", 100, 240, 20, WHITE);
+    //DrawTextBright("4. ", 100, 280, 20, WHITE);
+    DrawTextBright("Press [BACKSPACE] to return to Menu", 100, 280, 20, YELLOW);
 }
 
 void DrawVictoryScreen(Texture2D background, int screenWidth, int screenHeight) {
@@ -41,7 +42,7 @@ void DrawVictoryScreen(Texture2D background, int screenWidth, int screenHeight) 
 
     DrawRectangle(0, 0, screenWidth, screenHeight, (Color){ 0, 0, 0, 180 });
 
-    const char *winTitle = "SAVED FOR TODAY!";
+    const char *winTitle = "CONGRATSS!!\nSAVED FOR TODAY!";
     const char *winPrompt = "Press [ENTER] to Play Again | [BACKSPACE] for Menu";
 
     DrawTextBright(winTitle, screenWidth/2 - MeasureText(winTitle, 30)/2, screenHeight/2 - 80, 30, YELLOW);
@@ -62,17 +63,17 @@ void DrawGameOverScreen(Texture2D background, int screenWidth, int screenHeight)
 
     DrawRectangle(0, 0, screenWidth, screenHeight, (Color){ 0, 0, 0, 190 });
 
-    const char *loseTitle = "IN IUT, ATTENDANCE MATTERS!";
+    const char *loseTitle = "SORRY!\nIN IUT, ATTENDANCE MATTERS!";
     const char *losePrompt = "Press [ENTER] to Try Again | [BACKSPACE] for Menu";
 
     DrawTextBright(loseTitle, screenWidth/2 - MeasureText(loseTitle, 30)/2, screenHeight/2 - 80, 30, YELLOW);
     DrawTextBright(losePrompt, screenWidth/2 - MeasureText(losePrompt, 18)/2, screenHeight/2 + 70, 18, LIGHTGRAY);
 }
 
-void CheckGameConditions(Rectangle playerRect, Rectangle goalRect, float timeLeft, GameScreen *currentScreen) {
+void CheckGameConditions(Rectangle playerRect, Rectangle goalRect, float timeLeft, EnergySystem *energy, GameScreen *currentScreen) {
     if (CheckCollisionRecs(playerRect, goalRect)) {
         *currentScreen = SCREEN_VICTORY;
-    } else if (timeLeft <= 0.0f) {
+    } else if (timeLeft <= 0.0f || Energy_IsEmpty(energy)) {
         *currentScreen = SCREEN_GAME_OVER;
     }
 }
