@@ -46,7 +46,7 @@ void Vending_DrawPrompt(VendingMachine *vm, Rectangle playerRect, Vector2 player
     if (!Vending_PlayerInZone(vm, playerRect))
         return;
 
-    const char *prompt = "Press [E] to buy a drink (5 coins)";
+    const char *prompt = "Press [E] to buy a drink (20 coins)";
     int textW = MeasureText(prompt, 18);
 
     float textX = playerPos.x + (playerWidth / 2.0f) - (textW / 2.0f);
