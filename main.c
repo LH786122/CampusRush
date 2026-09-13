@@ -153,7 +153,7 @@ int main(void)
             }
 
             // Check Game State Conditions (Victory/Defeat)
-            CheckGameConditions(playerRect, academicBuilding2, timeLeft, &currentScreen);
+            CheckGameConditions(playerRect, academicBuilding2, timeLeft, &energy, &currentScreen);
         }
         else if (currentScreen == SCREEN_VICTORY || currentScreen == SCREEN_GAME_OVER)
         {
@@ -235,7 +235,7 @@ int main(void)
                 // Global low-energy reminder (shows regardless of location)
                 if (energy.current / energy.max < 0.10f)
                 {
-                    const char *warn = "Energy critical! Press [E] near ROCKET to buy drinks!";
+                    const char *warn = "Energy critical! PRESS [E] NEAR ROCKET TO BUY DRINKS!";
                     int warnW = MeasureText(warn, 20);
                     DrawText(warn, currentW/2 - warnW/2, 90, 20, RED);
                 }
