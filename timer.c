@@ -16,6 +16,7 @@ void UpdateTimer(float *timeLeft)
 
 void DrawTimer(float timeLeft)
 {
-    DrawText(TextFormat("Time: %.0f", timeLeft),10,50,30,RED);
-             
+    DrawRectangle(8, 55, 180, 45, Fade(BROWN, 0.75f));
+    DrawRectangleLines(8, 55, 180, 45, BLACK);
+    DrawText(TextFormat("Time: %.0f", timeLeft), 20, 65, 30, BLACK);
 }

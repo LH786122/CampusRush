@@ -2,18 +2,21 @@
 #define COIN_H
 
 #include "raylib.h"
+#include <stdbool.h>
 
-typedef struct {
+#define COIN_COUNT 40
+
+typedef struct
+{
     Vector2 position;
     float radius;
     bool collected;
-}Coin;
+} Coin;
 
-Coin CreateCoin(int mapWidth, int mapHeight);
+void CreateCoins(Coin coins[]);
 
-void DrawCoin(Coin coin);
+void DrawCoin(Coin coin, Texture2D coinTexture);
 
 bool CheckCoinCollision(Coin *coin, Rectangle playerRect);
 
-
-#endif 
+#endif

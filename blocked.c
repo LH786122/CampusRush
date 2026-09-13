@@ -19,4 +19,6 @@ bool isBlocked(Vector2 pos){
     if(pos.x>=49 && pos.x<=414
         && pos.y>=4  && pos.y<= 194)
         return true;
+
+    return false;
 }

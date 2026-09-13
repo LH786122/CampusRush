@@ -1,6 +1,7 @@
 #include "player.h"
 #include <math.h>
 
+
 #define FRAME_TIME 0.14f
 
 
@@ -30,7 +31,7 @@ void Player_Load(Player *player, Vector2 startPos)
 
     player->speed = 190.0f;
 
-    player->height = 100;
+    player->height = 70;
 
     player->width = (int)(
         player->height *
