@@ -3,7 +3,6 @@
 #include "coin.h"
 #include "timer.h"
 #include "hurdle.h"
-#include "blocked.h"
 #include "popup.h"
 #include "screens.h"
 #include "vending.h"
@@ -24,6 +23,7 @@ int main(void)
     const int screenHeight = 450;
 
     InitWindow(screenWidth, screenHeight, "CampusRush");
+    InitAudioDevice();
 
     Texture2D map = LoadTexture("assets/map.png");
     Texture2D coinTexture = LoadTexture("assets/coin-removebg-preview.png");
@@ -34,6 +34,9 @@ int main(void)
     Texture2D manualBg = LoadTexture("forcover (1).png"); 
     Texture2D winBg = LoadTexture("forcover (1).png"); 
     Texture2D loseBg = LoadTexture("forcover (1).png");
+
+    Music bgMusic = LoadMusicStream("assets/music.mp3");
+    PlayMusicStream(bgMusic);
 
     // Initialize Popup System & Menus
     PopupSystem popup;
@@ -65,7 +68,7 @@ int main(void)
     CreateHurdles(hurdles);
 
     // Goal location over Academic Building 2
-    Rectangle academicBuilding2 = { 300, 143, 240, 140 };
+    Rectangle academicBuilding2 = { 300, 143, 20, 20 };
 
     SetTargetFPS(60);
 
@@ -85,6 +88,7 @@ int main(void)
         }
         else if (currentScreen == SCREEN_GAMEPLAY)
         {
+            UpdateMusicStream(bgMusic);
             float dt = GetFrameTime();
 
             Player_Update(&player, dt, MAP_WIDTH, MAP_HEIGHT);
@@ -220,6 +224,11 @@ int main(void)
     UnloadTexture(loseBg);
 
     UnloadMenuPage();
+
+    StopMusicStream(bgMusic);
+    UnloadMusicStream(bgMusic);
+    CloseAudioDevice();
+    
     CloseWindow();
 
     return 0;
